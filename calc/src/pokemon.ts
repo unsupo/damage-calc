@@ -43,6 +43,8 @@ export class Pokemon implements State.Pokemon {
       ivs?: Partial<I.StatsTable> & {spc?: number};
       evs?: Partial<I.StatsTable> & {spc?: number};
       boosts?: Partial<I.StatsTable> & {spc?: number};
+      stats?: Partial<I.StatsTable> & {spc?: number};
+      rawStats?: Partial<I.StatsTable> & {spc?: number};
     } = {}
   ) {
     this.species = extend(true, {}, gen.species.get(toID(name)), options.overrides);
