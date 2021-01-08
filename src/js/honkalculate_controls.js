@@ -1,10 +1,9 @@
 $.fn.DataTable.ColVis.prototype._fnDomColumnButton = function (i) {
-	var
-		that = this,
+	const that = this,
 		column = this.s.dt.aoColumns[i],
 		dt = this.s.dt;
 
-	var title = this.s.fnLabel === null ?
+	const title = this.s.fnLabel === null ?
 		column.sTitle :
 		this.s.fnLabel(i, column.sTitle, column.nTh);
 
@@ -17,7 +16,7 @@ $.fn.DataTable.ColVis.prototype._fnDomColumnButton = function (i) {
 		'</li>'
 	)
 		.click(function (e) {
-			var showHide = !$('input', this).is(":checked");
+			let showHide = !$('input', this).is(":checked");
 			if (e.target.nodeName.toLowerCase() !== "li") {
 				showHide = !showHide;
 			}
@@ -25,7 +24,7 @@ $.fn.DataTable.ColVis.prototype._fnDomColumnButton = function (i) {
 			/* Need to consider the case where the initialiser created more than one table - change the
 			 * API index that DataTables is using
 			 */
-			var oldIndex = $.fn.dataTableExt.iApiIndex;
+			const oldIndex = $.fn.dataTableExt.iApiIndex;
 			$.fn.dataTableExt.iApiIndex = that._fnDataTablesApiIndex();
 
 			// Optimisation for server-side processing when scrolling - don't do a full redraw
@@ -62,24 +61,26 @@ $.fn.dataTableExt.oSort['damage48-desc'] = function (a, b) {
 	return parseInt(b) - parseInt(a);
 };
 
+let table;
+
 function performCalculations() {
-	var attacker, defender, setName, setTier;
-	var selectedTiers = getSelectedTiers();
-	var setOptions = getSetOptions();
-	var dataSet = [];
-	var pokeInfo = $("#p1");
-	for (var i = 0; i < setOptions.length; i++) {
+	let attacker, defender, setName, setTier;
+	const selectedTiers = getSelectedTiers();
+	const setOptions = getSetOptions();
+	const dataSet = [];
+	const pokeInfo = $("#p1");
+	for (let i = 0; i < setOptions.length; i++) {
 		if (setOptions[i].id && typeof setOptions[i].id !== "undefined") {
 			setName = setOptions[i].id.substring(setOptions[i].id.indexOf("(") + 1, setOptions[i].id.lastIndexOf(")"));
 			setTier = setName.substring(0, setName.indexOf(" "));
 			if (selectedTiers.indexOf(setTier) !== -1) {
-				var field = createField();
+				const field = createField();
 				if (mode === "one-vs-all") {
-					attacker = createPokemon(pokeInfo);
-					defender = createPokemon(setOptions[i].id);
+					attacker = createPokemon(parsePokeInfo(pokeInfo));
+					defender = createPokemon(parsePokeInfo(setOptions[i].id));
 				} else {
-					attacker = createPokemon(setOptions[i].id);
-					defender = createPokemon(pokeInfo);
+					attacker = createPokemon(parsePokeInfo(setOptions[i].id));
+					defender = createPokemon(parsePokeInfo(pokeInfo));
 					field.swap();
 				}
 				if (attacker.ability === "Rivalry") {
@@ -88,13 +89,13 @@ function performCalculations() {
 				if (defender.ability === "Rivalry") {
 					defender.gender = "N";
 				}
-				var damageResults = calculateMovesOfAttacker(gen, attacker, defender, field);
+				const damageResults = calculateMovesOfAttacker(gen, attacker, defender, field);
 				attacker = damageResults[0].attacker;
 				defender = damageResults[0].defender;
-				var result, minMaxDamage, minDamage, maxDamage, minPercentage, maxPercentage, minPixels, maxPixels;
-				var highestDamage = -1;
-				var data = [setOptions[i].id];
-				for (var n = 0; n < 4; n++) {
+				let result, minMaxDamage, minDamage, maxDamage, minPercentage, maxPercentage, minPixels, maxPixels;
+				let highestDamage = -1;
+				const data = [setOptions[i].id];
+				for (let n = 0; n < 4; n++) {
 					result = damageResults[n];
 					minMaxDamage = result.range();
 					minDamage = minMaxDamage[0] * attacker.moves[n].hits;
@@ -122,21 +123,20 @@ function performCalculations() {
 			}
 		}
 	}
-	var pokemon = mode === "one-vs-all" ? attacker : defender;
+	const pokemon = mode === "one-vs-all" ? attacker : defender;
 	if (pokemon) pokeInfo.find(".sp .totalMod").text(pokemon.stats.spe);
 	table.rows.add(dataSet).draw();
 }
 
 function getSelectedTiers() {
-	var selectedTiers = $('.tiers input:checked').map(function () {
+	return $('.tiers input:checked').map(function () {
 		return this.id;
 	}).get();
-	return selectedTiers;
 }
 
 function calculateMovesOfAttacker(gen, attacker, defender, field) {
-	var results = [];
-	for (var i = 0; i < 4; i++) {
+	const results = [];
+	for (let i = 0; i < 4; i++) {
 		results[i] = calc.calculate(gen, attacker, defender, attacker.moves[i], field);
 	}
 	return results;
@@ -155,8 +155,8 @@ $(".gen").change(function () {
 });
 
 function adjustTierBorderRadius() {
-	var squaredLeftCorner = {"border-top-left-radius": 0, "border-bottom-left-radius": 0};
-	var roundedLeftCorner = {"border-top-left-radius": "8px", "border-bottom-left-radius": "8px"};
+	const squaredLeftCorner = {"border-top-left-radius": 0, "border-bottom-left-radius": 0};
+	const roundedLeftCorner = {"border-top-left-radius": "8px", "border-bottom-left-radius": "8px"};
 	if (gen <= 2) {
 		$("#UU").next("label").css(roundedLeftCorner);
 	} else {
@@ -179,7 +179,6 @@ function adjustTierBorderRadius() {
 	}
 }
 
-var table;
 function constructDataTable() {
 	table = $("#holder-2").DataTable({
 		destroy: true,
@@ -205,7 +204,7 @@ function constructDataTable() {
 		colVis: {
 			exclude: (gen > 2) ? [0, 1, 2] : (gen === 2) ? [0, 1, 2, 7] : [0, 1, 2, 7, 8],
 			stateChange: function (iColumn, bVisible) {
-				var column = table.settings()[0].aoColumns[iColumn];
+				const column = table.settings()[0].aoColumns[iColumn];
 				if (column.bSearchable !== bVisible) {
 					column.bSearchable = bVisible;
 					table.rows().invalidate();
@@ -221,10 +220,10 @@ function constructDataTable() {
 }
 
 function placeBsBtn() {
-	var honkalculator = "<button style='position:absolute' class='bs-btn bs-btn-default'>Honkalculate</button>";
+	const honkalculator = "<button style='position:absolute' class='bs-btn bs-btn-default'>Honkalculate</button>";
 	$("#holder-2_wrapper").prepend(honkalculator);
 	$(".bs-btn").click(function () {
-		var formats = getSelectedTiers();
+		const formats = getSelectedTiers();
 		if (!formats.length) {
 			$(".bs-btn").popover({
 				content: "No format selected",
@@ -238,26 +237,27 @@ function placeBsBtn() {
 }
 
 $(".mode").change(function () {
+	let params;
 	if ($("#one-vs-one").prop("checked")) {
-		var params = new URLSearchParams(window.location.search);
+		params = new URLSearchParams(window.location.search);
 		params.delete('mode');
 		params = '' + params;
 		window.location.replace('index' + linkExtension + (params.length ? '?' + params : ''));
 	} else if ($("#randoms").prop("checked")) {
-		var params = new URLSearchParams(window.location.search);
+		params = new URLSearchParams(window.location.search);
 		params.delete('mode');
 		params = '' + params;
 		window.location.replace('randoms' + linkExtension + (params.length ? '?' + params : ''));
 	} else {
-		var params = new URLSearchParams(window.location.search);
+		params = new URLSearchParams(window.location.search);
 		params.set('mode', $(this).attr("id"));
 		window.location.replace('honkalculate' + linkExtension + '?' + params);
 	}
 });
 
 $(".tiers label").mouseup(function () {
-	var oldID = $('.tiers input:checked').attr("id");
-	var newID = $(this).attr("for");
+	const oldID = $('.tiers input:checked').attr("id");
+	const newID = $(this).attr("for");
 	if ((oldID === "Doubles" || startsWith(oldID, "VGC")) && (newID !== oldID)) {
 		$("#singles-format").attr("disabled", false);
 		$("#singles-format").prop("checked", true);
@@ -268,8 +268,8 @@ $(".tiers label").mouseup(function () {
 });
 
 $(".tiers input").change(function () {
-	var type = $(this).attr("type");
-	var id = $(this).attr("id");
+	const type = $(this).attr("type");
+	const id = $(this).attr("id");
 	$(".tiers input").not(":" + type).prop("checked", false); // deselect all radios if a checkbox is checked, and vice-versa
 
 	if (id === "Doubles" || startsWith(id, "VGC")) {
@@ -297,8 +297,8 @@ function setLevel(lvl) {
 }
 
 $(".set-selector").change(function (e) {
-	var genWasChanged;
-	var format = getSelectedTiers()[0];
+	let genWasChanged;
+	const format = getSelectedTiers()[0];
 	if (genWasChanged) {
 		genWasChanged = false;
 	} else if (startsWith(format, "VGC") && $('.level').val() !== "50") {
@@ -310,7 +310,7 @@ $(".set-selector").change(function (e) {
 
 var dtHeight, dtWidth;
 $(document).ready(function () {
-	var params = new URLSearchParams(window.location.search);
+	const params = new URLSearchParams(window.location.search);
 	window.mode = params.get("mode");
 	if (window.mode) {
 		if (window.mode === "randoms") {
@@ -336,8 +336,8 @@ function calcDTDimensions() {
 		dom: 'C<"clear">frti'
 	});
 
-	var theadBottomOffset = getBottomOffset($(".sorting"));
-	var heightUnderDT = getBottomOffset($(".holder-0")) - getBottomOffset($("#holder-2 tbody"));
+	const theadBottomOffset = getBottomOffset($(".sorting"));
+	const heightUnderDT = getBottomOffset($(".holder-0")) - getBottomOffset($("#holder-2 tbody"));
 	dtHeight = $(document).height() - theadBottomOffset - heightUnderDT;
 	dtWidth = $(window).width() - $("#holder-2").offset().left;
 	dtWidth -= 2 * parseFloat($(".holder-0").css("padding-right"));

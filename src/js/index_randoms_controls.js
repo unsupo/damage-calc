@@ -10,7 +10,7 @@ $("#p2 .item").bind("keyup change", function () {
 lastManualStatus["#p2"] = "Healthy";
 lastAutoStatus["#p1"] = "Healthy";
 
-var resultLocations = [[], []];
+const resultLocations = [[], []];
 for (var i = 0; i < 4; i++) {
 	resultLocations[0].push({
 		"move": "#resultMoveL" + (i + 1),
@@ -22,29 +22,30 @@ for (var i = 0; i < 4; i++) {
 	});
 }
 
-var damageResults;
+let damageResults;
+
 function performCalculations() {
-	var p1info = $("#p1");
-	var p2info = $("#p2");
-	var p1 = createPokemon(p1info);
-	var p2 = createPokemon(p2info);
-	var p1field = createField();
-	var p2field = p1field.clone().swap();
+	const p1info = $("#p1");
+	const p2info = $("#p2");
+	let p1 = createPokemon(parsePokeInfo(p1info));
+	let p2 = createPokemon(parsePokeInfo(p2info));
+	const p1field = createField();
+	const p2field = p1field.clone().swap();
 
 	damageResults = calculateAllMoves(gen, p1, p1field, p2, p2field);
 	p1 = damageResults[0][0].attacker;
 	p2 = damageResults[1][0].attacker;
-	var battling = [p1, p2];
+	const battling = [p1, p2];
 	p1.maxDamages = [];
 	p2.maxDamages = [];
 	p1info.find(".sp .totalMod").text(p1.stats.spe);
 	p2info.find(".sp .totalMod").text(p2.stats.spe);
-	var fastestSide = p1.stats.spe > p2.stats.spe ? 0 : p1.stats.spe === p2.stats.spe ? "tie" : 1;
+	const fastestSide = p1.stats.spe > p2.stats.spe ? 0 : p1.stats.spe === p2.stats.spe ? "tie" : 1;
 
-	var result, maxDamage;
-	var bestResult;
-	var zProtectAlerted = false;
-	for (var i = 0; i < 4; i++) {
+	let result, maxDamage;
+	let bestResult;
+	let zProtectAlerted = false;
+	for (let i = 0; i < 4; i++) {
 		// P1
 		result = damageResults[0][i];
 		maxDamage = result.range()[1] * p1.moves[i].hits;
@@ -74,12 +75,12 @@ function performCalculations() {
 		$(resultLocations[1][i].damage).text(result.moveDesc(notation));
 
 		// BOTH
-		var bestMove;
+		let bestMove;
 		if (fastestSide === "tie") {
 			// Technically the order should be random in a speed tie, but this non-determinism makes manual testing more difficult.
 			// battling.sort(function () { return 0.5 - Math.random(); });
 			bestMove = battling[0].maxDamages[0].moveOrder;
-			var chosenPokemon = battling[0] === p1 ? "0" : "1";
+			const chosenPokemon = battling[0] === p1 ? "0" : "1";
 			bestResult = $(resultLocations[chosenPokemon][bestMove].move);
 		} else {
 			bestMove = battling[fastestSide].maxDamages[0].moveOrder;
@@ -99,9 +100,9 @@ function performCalculations() {
 
 $(".result-move").change(function () {
 	if (damageResults) {
-		var result = findDamageResult($(this));
+		const result = findDamageResult($(this));
 		if (result) {
-			var desc = result.fullDesc(notation, false);
+			let desc = result.fullDesc(notation, false);
 			if (desc.indexOf('--') === -1) desc += ' -- possibly the worst move ever';
 			$("#mainResult").text(desc);
 			$("#damageValues").text("Possible damage amounts: (" + displayDamageHits(result.damage) + ")");
@@ -123,9 +124,9 @@ function displayDamageHits(damage) {
 }
 
 function findDamageResult(resultMoveObj) {
-	var selector = "#" + resultMoveObj.attr("id");
-	for (var i = 0; i < resultLocations.length; i++) {
-		for (var j = 0; j < resultLocations[i].length; j++) {
+	const selector = "#" + resultMoveObj.attr("id");
+	for (let i = 0; i < resultLocations.length; i++) {
+		for (let j = 0; j < resultLocations[i].length; j++) {
 			if (resultLocations[i][j].move === selector) {
 				return damageResults[i][j];
 			}
@@ -134,14 +135,15 @@ function findDamageResult(resultMoveObj) {
 }
 
 function checkStatBoost(p1, p2) {
+	let stat;
 	if ($('#StatBoostL').prop("checked")) {
-		for (var stat in p1.boosts) {
+		for (stat in p1.boosts) {
 			if (stat === 'hp') continue;
 			p1.boosts[stat] = Math.min(6, p1.boosts[stat] + 1);
 		}
 	}
 	if ($('#StatBoostR').prop("checked")) {
-		for (var stat in p2.boosts) {
+		for (stat in p2.boosts) {
 			if (stat === 'hp') continue;
 			p2.boosts[stat] = Math.min(6, p2.boosts[stat] + 1);
 		}
@@ -150,8 +152,8 @@ function checkStatBoost(p1, p2) {
 
 function calculateAllMoves(gen, p1, p1field, p2, p2field) {
 	checkStatBoost(p1, p2);
-	var results = [[], []];
-	for (var i = 0; i < 4; i++) {
+	const results = [[], []];
+	for (let i = 0; i < 4; i++) {
 		results[0][i] = calc.calculate(gen, p1, p2, p1.moves[i], p1field);
 		results[1][i] = calc.calculate(gen, p2, p1, p2.moves[i], p2field);
 	}
@@ -159,9 +161,9 @@ function calculateAllMoves(gen, p1, p1field, p2, p2field) {
 }
 
 $(".mode").change(function () {
-	var params = new URLSearchParams(window.location.search);
+	const params = new URLSearchParams(window.location.search);
 	params.set('mode', $(this).attr("id"));
-	var mode = params.get('mode');
+	const mode = params.get('mode');
 	if (mode === 'randoms') {
 		window.location.replace('randoms' + linkExtension + '?' + params);
 	} else if (mode === 'one-vs-one') {
@@ -176,8 +178,8 @@ $(".notation").change(function () {
 });
 
 $(document).ready(function () {
-	var params = new URLSearchParams(window.location.search);
-	var m = params.get('mode');
+	const params = new URLSearchParams(window.location.search);
+	const m = params.get('mode');
 	if (m) {
 		if (m !== 'one-vs-one' && m !== 'randoms') {
 			window.location.replace('honkalculate' + linkExtension + '?' + params);
